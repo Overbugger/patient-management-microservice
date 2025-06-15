@@ -6,11 +6,13 @@ import com.endpoint.patientservice.dto.PatientResponseDTO;
 import com.endpoint.patientservice.exception.EmailAlreadyExistexception;
 import com.endpoint.patientservice.exception.PatientNotFoundException;
 import com.endpoint.patientservice.grpc.BillingServiceGrpcClient;
+import com.endpoint.patientservice.kafka.KafkaProducer;
 import com.endpoint.patientservice.mapper.PatientMapper;
 import com.endpoint.patientservice.model.Patient;
 import com.endpoint.patientservice.repository.PatientRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -24,6 +26,7 @@ public class PatientService {
 
     private final PatientRepo patientRepo;
     private final BillingServiceGrpcClient billingServiceGrpcClient;
+    private final KafkaProducer kafkaProducer;
 
     public List<PatientResponseDTO> getAllPatients() {
         List<Patient> patients = patientRepo.findAll();
@@ -40,6 +43,7 @@ public class PatientService {
         Patient newPatient = patientRepo.save(patientToBeAdded);
 
         billingServiceGrpcClient.createBillingAccount(newPatient.getId().toString(), newPatient.getName(), newPatient.getEmail());
+        kafkaProducer.sendEvent(newPatient);
 
         return PatientMapper.toPatientResponseDTO(newPatient);
     }

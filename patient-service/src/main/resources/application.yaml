@@ -1,6 +1,10 @@
 spring:
   application:
     name: patient-service
+  kafka:
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
 #  h2:
 #    console:
 #      path: /h2-console
@@ -16,7 +20,12 @@ spring:
 #  sql:
 #    init:
 #      mode: always
+
 server:
   port: 4000
   servlet:
     context-path: /api/v1
+
+logging:
+  level:
+    root: info
